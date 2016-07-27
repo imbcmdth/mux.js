@@ -19,6 +19,59 @@
       padding: 10px;
       border: 1px solid #ccc;
     }
+    mp4-box {
+      background-color: rgba(0,0,0,0.01);
+      display: block;
+      margin-left: 10px;
+      padding-top: 5px;
+      padding-bottom: 5px;
+    }
+    mp4-box[type='ftyp']>mp4-box-type,
+    mp4-box[type='access_unit_delimiter_rbsp']>mp4-box-type {
+      background-color: rgba(128,96,64,1);
+    }
+    mp4-box[type='moov']>mp4-box-type,
+    mp4-box[type='slice_layer_without_partitioning_rbsp']>mp4-box-type,
+    mp4-box[type='slice_layer_without_partitioning_rbsp_idr']>mp4-box-type {
+      background-color: rgba(128,64,96,1);
+    }
+    mp4-box[type='moof']>mp4-box-type,
+    mp4-box[type='seq_parameter_set_rbsp']>mp4-box-type {
+      background-color: rgba(64,128,96,1);
+    }
+    mp4-box[type='mdat']>mp4-box-type,
+    mp4-box[type='pic_parameter_set_rbsp']>mp4-box-type {
+      background-color: rgba(64,96,128,1);
+    }
+    mp4-box-type {
+      background-color: rgba(96,96,96,1);
+      color: #eee;
+      display: block;
+      padding: 5px;
+    }
+    mp4-boxes {
+      display: block;
+    }
+    mp4-properties {
+      display: table;
+    }
+    mp4-property {
+      display: table-row;
+    }
+    mp4-name, mp4-value {
+      display: table-cell;
+      padding: 5px;
+    }
+    mp4-box-type::before {
+      content: '\25bc ';
+    }
+    mp4-box-type.collapsed::before {
+      content: '\25b6 ';
+    }
+    mp4-box-type.collapsed ~ mp4-boxes,
+    mp4-box-type.collapsed ~ mp4-properties {
+      display: none;
+    }
   </style>
 </head>
 <body>
@@ -114,8 +167,8 @@ mp4fragment --track audio --fragment-duration 11000 movie-audio.mp4 movie-audio.
           <h2>Structure</h2>
           <div class="result-wrapper">
             <h3>videojs-contrib-hls</h3>
-            <pre class="vjs-boxes">
-            </pre>
+            <div class="vjs-boxes">
+            </div>
           </div>
           <div class="result-wrapper">
             <h3>Working</h3>
@@ -225,7 +278,6 @@ mp4fragment --track audio --fragment-duration 11000 movie-audio.mp4 movie-audio.
         QUnit.diff(muxjs.mp4.tools.textify(transmuxed, null, ' '),
                    muxjs.mp4.tools.textify(workingParsed, null, ' ')) +
         '</pre>';
-
       comparison.innerHTML = diff;
     };
 
@@ -338,7 +390,8 @@ mp4fragment --track audio --fragment-duration 11000 movie-audio.mp4 movie-audio.
             diffParsed();
 
             // clear old box info
-            vjsBoxes.innerHTML = muxjs.mp4.tools.textify(vjsParsed, null, ' ');
+            vjsBoxes.innerHTML = '';//muxjs.mp4.tools.textify(vjsParsed, null, ' ');
+            vjsBoxes.appendChild(muxjs.mp4.tools.domify(vjsParsed));
 
             if ($('#original-active').checked) {
               prepareSourceBuffer(combined, outputType, function () {
@@ -377,7 +430,8 @@ mp4fragment --track audio --fragment-duration 11000 movie-audio.mp4 movie-audio.
         diffParsed();
 
         // clear old box info
-        workingBoxes.innerHTML = muxjs.mp4.tools.textify(workingParsed, null, ' ');
+        workingBoxes.innerHTML = '';//muxjs.mp4.tools.textify(workingParsed, null, ' ');
+        workingBoxes.appendChild(muxjs.mp4.tools.domify(workingParsed));
       });
       reader.readAsArrayBuffer(this.files[0]);
     }, false);
@@ -398,6 +452,13 @@ mp4fragment --track audio --fragment-duration 11000 movie-audio.mp4 movie-audio.
 
     [].slice.call(document.querySelectorAll('input')).forEach(function(el){
       el.addEventListener('change', saveConfig);
+    });
+  </script>
+  <script>
+    document.body.addEventListener('click', function (e) {
+      if (e.srcElement.tagName === 'MP4-BOX-TYPE') {
+        e.srcElement.classList.toggle('collapsed');
+      }
     });
   </script>
 </body>
